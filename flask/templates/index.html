@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Medical Chat | MedTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth shrinking */
+        aside {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 h-screen font-sans text-gray-800 flex overflow-hidden w-full">
+
+    <!-- 1. LEFT SIDEBAR: History (Collapsible) -->
+    <!-- 1. LEFT SIDEBAR: History (Collapsible) -->
+    <aside id="left-sidebar"
+        class="relative z-50 bg-white border-r border-gray-200 flex flex-col justify-between w-72 shrink-0 h-full shadow-sm overflow-visible">
+
+        <div class="flex flex-col h-full overflow-hidden">
+            <!-- Branding -->
+            <div class="h-16 flex items-center justify-center px-6 border-b border-gray-100 shrink-0 relative">
+                <div class="flex items-center">
+                    <i class="fas fa-dna text-blue-600 text-xl mr-3"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900">MedTech</span>
+                </div>
+            </div>
+
+            <!-- New Chat Button -->
+            <div class="p-4 border-b border-gray-100 shrink-0">
+                <button onclick="startNewChat()"
+                    class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center font-medium">
+                    <i class="fas fa-plus mr-2 text-xs"></i> New Chat
+                </button>
+            </div>
+
+            <!-- History List -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 ml-1">Recent Sessions</h3>
+
+                {% for session in sessions %}
+                <!-- History Item -->
+                <div
+                    class="group relative p-3 rounded-xl {% if current_session and session.id == current_session.id %}bg-blue-50/50 border border-blue-100{% else %}hover:bg-gray-50 border border-transparent hover:border-gray-100{% endif %} cursor-pointer transition-all">
+                    <div class="flex items-center justify-between mb-1">
+                        <span
+                            class="text-sm font-medium {% if current_session and session.id == current_session.id %}text-blue-900{% else %}text-gray-700{% endif %} truncate max-w-[65%]">{{
+                            session.title }}</span>
+
+                        <!-- Session Features (Visible on Hover) -->
+                        <div class="hidden group-hover:flex items-center space-x-2">
+                            <button onclick="shareSession('{{ session.id }}', event)"
+                                class="text-gray-400 hover:text-blue-600" title="Share Session"><i
+                                    class="fas fa-share-alt text-[10px]"></i></button>
+                            <button onclick="downloadSession('{{ session.id }}', event)"
+                                class="text-gray-400 hover:text-green-600" title="Download Chat"><i
+                                    class="fas fa-download text-[10px]"></i></button>
+                            <button onclick="deleteSession('{{ session.id }}', event)"
+                                class="text-gray-400 hover:text-red-500" title="Delete Session"><i
+                                    class="fas fa-trash text-[10px]"></i></button>
+                        </div>
+
+                        <!-- Time (Hide on Hover when actions appear) -->
+                        <span
+                            class="text-[10px] {% if current_session and session.id == current_session.id %}text-blue-400{% else %}text-gray-400{% endif %} group-hover:hidden">{{
+                            session.created_at.strftime('%H:%M') }}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 line-clamp-1">Session ID: {{ session.id }}</p>
+                </div>
+                {% endfor %}
+
+                {% if not sessions %}
+                <div class="p-4 text-center text-xs text-gray-400">No recent sessions</div>
+                {% endif %}
+            </div>
+        </div>
+    </aside>
+
+    <!-- 2. CENTER PANEL: Chat Interface -->
+    <main class="flex-1 flex flex-col h-full relative min-w-0 bg-gray-50/50">
+        <!-- Header -->
+        <header
+            class="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 flex items-center justify-between shrink-0 sticky top-0 z-30">
+
+            <div class="flex items-center space-x-3 z-10">
+                <!-- Header Logo (Hidden by default, shown when sidebar closed) -->
+                <div id="header-logo" class="flex items-center hidden transition-opacity duration-300">
+                    <i class="fas fa-dna text-blue-600 text-lg mr-2"></i>
+                    <span class="font-bold text-lg tracking-tight text-gray-900">MedTech</span>
+                </div>
+
+                <!-- Left Minimizer Button -->
+                <button id="left-toggle-btn" onclick="toggleLeftSidebar()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors focus:outline-none group relative">
+                    <i class="fas fa-chevron-left text-sm transition-transform duration-300"></i>
+                    <!-- Tooltip -->
+                    <span
+                        class="absolute top-10 left-0 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Left
+                        Panel</span>
+                </button>
+            </div>
+
+            <!-- Absolute Center Title -->
+            <div class="absolute inset-x-0 flex justify-center items-center pointer-events-none">
+                <div class="flex items-center pl-2 pointer-events-auto">
+                    <div class="w-2 h-2 rounded-full bg-green-500 mr-3 animate-pulse"></div>
+                    <div class="text-center">
+                        <h1 class="font-bold text-gray-800 text-base">Dr. AI Assistant</h1>
+                        <p class="text-[10px] text-gray-400 font-medium tracking-wide">ALWAYS ON • INSTANT REPLY</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Controls -->
+            <div class="flex items-center space-x-3 z-10">
+                <!-- Model Selector -->
+                <div class="relative group">
+                    <select id="model-selector"
+                        class="appearance-none bg-gray-100 border border-gray-200 text-gray-700 text-xs rounded-full py-1 pl-3 pr-7 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer font-medium hover:bg-gray-200">
+                        <option value="gemma-it">Gemma 4B IT (Chat)</option>
+                        <option value="gemma-pt">Gemma 4B PT (Base)</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                        <i class="fas fa-chevron-down text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- Right Minimizer Button -->
+                <button id="right-toggle-btn" onclick="toggleRightSidebar()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors focus:outline-none z-10 group relative">
+                    <i class="fas fa-chevron-right text-sm transition-transform duration-300"></i>
+                    <!-- Tooltip -->
+                    <span
+                        class="absolute top-10 right-0 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Right
+                        Panel</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="flex-1 flex flex-col overflow-hidden relative">
+
+            <!-- Messages Scroll Area -->
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+                <!-- Welcome -->
+                <div class="text-center py-12">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600 shadow-inner">
+                        <i class="fas fa-user-md text-3xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">How can I help you today?</h2>
+                    <p class="text-sm text-gray-400 max-w-sm mx-auto">I can analyze symptoms, review reports, and
+                        suggest nearby specialists.</p>
+                </div>
+
+                <!-- Messages Area -->
+                <div id="chat-messages" class="w-full max-w-3xl mx-auto pb-4">
+                    <!-- Historical Messages from DB -->
+                    {% for msg in messages %}
+                    <div
+                        class="flex w-full mb-6 {% if msg.sender == 'user' %}justify-end{% else %}justify-start{% endif %} animate-fade-in">
+                        <div
+                            class="max-w-[75%] {% if msg.sender == 'user' %}bg-white text-gray-800 rounded-2xl rounded-tr-sm shadow-sm border border-gray-200{% else %}bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tl-sm shadow-md border border-blue-500/20{% endif %} p-4 relative group">
+                            <div
+                                class="flex items-center space-x-2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 {% if msg.sender == 'user' %}right-0{% else %}left-0{% endif %}">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{% if
+                                    msg.sender == 'user' %}You{% else %}MedTech AI{% endif %}</span>
+                            </div>
+                            <p class="text-sm leading-relaxed">{{ msg.content }}</p>
+                            <span
+                                class="text-[10px] absolute -bottom-5 {% if msg.sender == 'user' %}right-0 text-gray-400{% else %}left-0 text-gray-400{% endif %} opacity-0 group-hover:opacity-100 transition-opacity">
+                                {{ msg.timestamp.strftime('%H:%M') }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if not messages %}
+                    <!-- Initial AI Msg -->
+                    <div class="flex w-full mb-6 justify-start animate-fade-in">
+                        <div
+                            class="max-w-[75%] bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-2xl rounded-tl-sm shadow-md border border-blue-500/20 relative group">
+                            <div
+                                class="flex items-center space-x-2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 left-0">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">MedTech
+                                    AI</span>
+                            </div>
+                            <p class="text-sm leading-relaxed">Hello! I'm MedTech AI. Describe your symptoms or upload a
+                                medical report to get started.</p>
+                            <span
+                                class="text-[10px] absolute -bottom-5 left-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">Just
+                                now</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Static Input Area (Not Absolute) -->
+            <div
+                class="w-full bg-white border-t border-gray-200 p-4 shrink-0 z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+                <div class="max-w-3xl mx-auto">
+                    <div
+                        class="bg-white border border-gray-200 focus-within:border-gray-300 focus-within:shadow-md rounded-2xl shadow-sm transition-all duration-300 ease-in-out">
+                        <textarea id="message-input" rows="1"
+                            class="w-full bg-transparent border-none focus:ring-0 focus:outline-none outline-none text-gray-700 placeholder-gray-400 resize-none py-3 px-4 max-h-32 text-sm"
+                            style="box-shadow: none !important; outline: none !important;"
+                            placeholder="Describe your symptoms..."></textarea>
+
+                        <div class="flex justify-between items-center px-2 pt-1 pb-1 border-t border-gray-100">
+                            <div class="flex space-x-1">
+                                <button title="Attach File"
+                                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group relative">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button title="Upload Image"
+                                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group relative">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button title="Voice Input"
+                                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors group relative">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button title="Voice Call"
+                                    class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors group relative">
+                                    <i class="fas fa-phone-alt"></i>
+                                </button>
+                                <button title="Video Call"
+                                    class="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors group relative">
+                                    <i class="fas fa-video"></i>
+                                </button>
+                            </div>
+                            <button onclick="sendMessage()"
+                                class="bg-blue-600 text-white rounded-xl p-2.5 px-4 shadow-md hover:bg-blue-700 transition-transform active:scale-95">
+                                <i class="fas fa-paper-plane text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. RIGHT SIDEBAR: Shortcut Info (Collapsible) -->
+    <aside id="right-sidebar"
+        class="relative z-50 bg-white border-l border-gray-200 flex flex-col w-80 shrink-0 h-full shadow-sm overflow-visible">
+
+        <!-- Minimizer Button -->
+
+        <!-- Removed internal minimizer button -->
+
+        <div class="flex flex-col h-full overflow-hidden">
+            <!-- Profile Shortcut -->
+            <div class="p-5 border-b border-gray-100 flex items-center space-x-3 bg-gray-50/30">
+                <img src="https://ui-avatars.com/api/?name=Alex+Morgan&background=ebf8ff&color=2563eb"
+                    class="w-10 h-10 rounded-full border-2 border-white shadow-sm hover:scale-105 transition-transform cursor-pointer"
+                    onclick="window.location.href='/profile'">
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-gray-900 text-sm truncate">Praharsha</h3>
+                    <!-- Removed Premium Plan text -->
+                </div>
+                <a href="/profile" class="text-gray-400 hover:text-blue-600"><i class="fas fa-cog"></i></a>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-6">
+
+                <!-- Quick Doctors -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Nearby Doctors</h4>
+                        <a href="/doctors" class="text-[10px] text-blue-600 hover:underline font-semibold">View All</a>
+                    </div>
+                    <div class="space-y-2">
+                        <!-- Doc Item -->
+                        <div
+                            class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-3">
+                            <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=random"
+                                class="w-8 h-8 rounded-full">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold text-gray-800">Dr. Sarah Smith</p>
+                                <p class="text-[10px] text-gray-500">Cardiologist • Available</p>
+                                <p class="text-[10px] text-blue-600 mt-1"><i class="fas fa-phone-alt mr-1"></i> +1
+                                    555-0123</p>
+                            </div>
+                        </div>
+                        <!-- Doc Item -->
+                        <div
+                            class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-3">
+                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=random"
+                                class="w-8 h-8 rounded-full">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold text-gray-800">Dr. John Doe</p>
+                                <p class="text-[10px] text-gray-500">General • Offline</p>
+                                <p class="text-[10px] text-blue-600 mt-1"><i class="fas fa-phone-alt mr-1"></i> +1
+                                    555-0124</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Hospitals -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Nearby Hospitals</h4>
+                        <a href="/hospitals" class="text-[10px] text-blue-600 hover:underline font-semibold">View
+                            All</a>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="flex justify-between items-start">
+                                <p class="text-xs font-bold text-gray-800">City General</p>
+                                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-0.5"><i class="fas fa-map-marker-alt mr-1"></i> Near
+                                Central Park</p>
+                            <p class="text-[10px] text-blue-600 mt-1"><i class="fas fa-phone-alt mr-1"></i> +1 555-9000
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <a href="/ailab"
+                        class="flex flex-col items-center justify-center p-3 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-100 transition-colors">
+                        <i class="fas fa-microscope text-lg mb-1"></i>
+                        <span class="text-xs font-bold">AI Lab</span>
+                    </a>
+                    <a href="/map"
+                        class="flex flex-col items-center justify-center p-3 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-100 transition-colors">
+                        <i class="fas fa-map-marked-alt text-lg mb-1"></i>
+                        <span class="text-xs font-bold">Map</span>
+                    </a>
+                    <a href="/transportation"
+                        class="flex flex-col items-center justify-center p-3 rounded-xl bg-green-50 text-green-600 hover:bg-green-100 border border-green-100 transition-colors col-span-2">
+                        <i class="fas fa-ambulance text-lg mb-1"></i>
+                        <span class="text-xs font-bold">Emergency Transport</span>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Bottom -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50/50">
+                <button
+                    class="w-full flex items-center justify-center px-4 py-2 text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

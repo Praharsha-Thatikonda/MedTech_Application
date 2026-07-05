@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Transport - MedTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 h-screen font-sans text-gray-800 flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-gray-200 z-50 sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Back -->
+                <a href="/" class="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    <span class="font-medium text-sm">Back</span>
+                </a>
+
+                <!-- Title -->
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mr-3 text-green-600">
+                        <i class="fas fa-ambulance"></i>
+                    </div>
+                    <h1 class="font-bold text-lg text-gray-900 tracking-tight">Emergency Transport</h1>
+                </div>
+
+                <!-- SOS -->
+                <button
+                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md animate-pulse-slow transition-colors">
+                    <i class="fas fa-phone-alt mr-2"></i> SOS (108)
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left: Booking Form -->
+        <div class="lg:col-span-1 space-y-4">
+            <!-- Status Card -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Request Service</h2>
+
+                <form class="space-y-4"
+                    onsubmit="event.preventDefault(); alert('Request sent! An ambulance is on the way.');">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Service Type</label>
+                        <select
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+                            <option>🚑 Ambulance (Emergency)</option>
+                            <option>🚐 Patient Transport (Non-Emergency)</option>
+                            <option>🚁 Air Ambulance (Critical)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Pickup Location</label>
+                        <div class="relative">
+                            <input type="text" value="Current Location (Mumbai)"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+                            <i class="fas fa-map-marker-alt absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Drop-off Hospital</label>
+                        <select
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+                            <option>Select nearest hospital...</option>
+                            <option>Fortis Hospital (2 km)</option>
+                            <option>Tata Memorial (5 km)</option>
+                            <option>Lilavati Hospital (8 km)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center">
+                        <span>Book Now</span>
+                        <i class="fas fa-arrow-right ml-2 text-xs opacity-70"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Driver Info (Hidden until booked, shown static for demo) -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Nearby Drivers</h2>
+                    <span class="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-lg">3 Available</span>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">Rohan S.</p>
+                                <p class="text-[10px] text-gray-500">4.9 ⭐ • Ambulatory</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-gray-600">2 min</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">Vikram M.</p>
+                                <p class="text-[10px] text-gray-500">4.8 ⭐ • ICU Van</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-gray-600">5 min</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Map View -->
+        <div
+            class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative min-h-[400px]">
+            <div id="transport-map" class="w-full h-full absolute inset-0"></div>
+
+            <!-- Floating Overlay -->
+            <div
+                class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm text-xs font-medium text-gray-600 z-[400]">
+                <i class="fas fa-circle text-green-500 text-[8px] mr-1"></i> Live Tracking
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Init Map (Mumbai)
+        var map = L.map('transport-map').setView([19.0760, 72.8777], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // User Marker
+        var userIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div style='background-color:#4F46E5; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.3);'></div>",
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+        L.marker([19.0760, 72.8777], { icon: userIcon }).addTo(map).bindPopup("You are here");
+
+        // Drivers
+        var drivers = [
+            { lat: 19.0790, lng: 72.8790, name: "Rohan S. (Ambulance)" },
+            { lat: 19.0730, lng: 72.8750, name: "Vikram M. (ICU Van)" },
+            { lat: 19.0810, lng: 72.8720, name: "Amit K. (Transport)" }
+        ];
+
+        var driverIcon = L.divIcon({
+            className: 'custom-driver-icon',
+            html: "<div style='background-color:#16A34A; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);'><i class='fas fa-ambulance' style='font-size:10px;'></i></div>",
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+
+        drivers.forEach(d => {
+            L.marker([d.lat, d.lng], { icon: driverIcon }).addTo(map).bindPopup(d.name);
+        });
+
+    </script>
+</body>
+
+</html>

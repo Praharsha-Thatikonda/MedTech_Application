@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Doctors - MedTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50 min-h-screen text-gray-800 font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <a href="{% url 'index' %}" class="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Chat
+        </a>
+        <h1 class="font-bold text-lg text-gray-900">Find Doctors</h1>
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+            <i class="fas fa-user-md"></i>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-6 lg:p-10">
+        <!-- Search Filter -->
+        <div class="flex space-x-4 mb-8">
+            <input type="text" placeholder="Search by name, specialty..."
+                class="flex-1 p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+            <button
+                class="bg-blue-600 text-white px-8 rounded-xl font-bold shadow-md hover:bg-blue-700 transition-colors">Search</button>
+        </div>
+
+        <div class="grid gap-6">
+            <!-- Full Card 1 -->
+            <div
+                class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-6">
+                <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=e0e7ff&color=4f46e5&size=128"
+                    class="w-24 h-24 rounded-2xl object-cover">
+                <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">Dr. Sarah Smith</h2>
+                            <p class="text-blue-600 font-medium">Cardiologist (MBBS, MD)</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="flex items-center text-yellow-400 text-sm">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                    class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                <span class="text-gray-400 ml-1 text-xs">(128)</span>
+                            </div>
+                            <p class="text-xs text-green-600 font-bold mt-1">Available Today</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-3 leading-relaxed">Specialist in interventional cardiology with
+                        over 15 years of experience in treating complex heart conditions.</p>
+
+                    <div class="flex items-center space-x-6 mt-4 text-sm text-gray-500">
+                        <span><i class="fas fa-map-marker-alt mr-2 text-gray-400"></i> City General Hospital</span>
+                        <span><i class="fas fa-suitcase mr-2 text-gray-400"></i> 15 Years Exp</span>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center space-y-2 min-w-[140px]">
+                    <button
+                        class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-200">Book
+                        Now</button>
+                    <button
+                        class="w-full py-3 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50">View
+                        Profile</button>
+                </div>
+            </div>
+
+            <!-- Full Card 2 -->
+            <div
+                class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-6">
+                <img src="https://ui-avatars.com/api/?name=James+Wilson&background=f0fdf4&color=16a34a&size=128"
+                    class="w-24 h-24 rounded-2xl object-cover">
+                <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">Dr. James Wilson</h2>
+                            <p class="text-blue-600 font-medium">Neurologist (MD, PhD)</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="flex items-center text-yellow-400 text-sm">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                    class="fas fa-star"></i><i class="far fa-star"></i>
+                                <span class="text-gray-400 ml-1 text-xs">(84)</span>
+                            </div>
+                            <p class="text-xs text-gray-400 font-bold mt-1">Next: Tomorrow</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-3 leading-relaxed">Expert in diagnosing and treating disorders of
+                        the nervous system, including Alzheimer's disease.</p>
+                    <div class="flex items-center space-x-6 mt-4 text-sm text-gray-500">
+                        <span><i class="fas fa-map-marker-alt mr-2 text-gray-400"></i> Neuropath Clinic</span>
+                        <span><i class="fas fa-suitcase mr-2 text-gray-400"></i> 8 Years Exp</span>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center space-y-2 min-w-[140px]">
+                    <button
+                        class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-200">Book
+                        Now</button>
+                    <button
+                        class="w-full py-3 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50">View
+                        Profile</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

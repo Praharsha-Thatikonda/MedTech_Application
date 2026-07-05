@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map View - MedTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+
+<body class="bg-gray-100 h-screen text-gray-800 font-sans flex flex-col">
+
+    <!-- Navbar Overlay -->
+    <nav class="absolute top-0 left-0 right-0 p-4 z-50 pointer-events-none">
+        <div class="max-w-7xl mx-auto flex justify-between items-start pointer-events-auto">
+            <a href="/"
+                class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg text-gray-600 hover:text-blue-600 transition-colors font-medium text-sm flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> back
+            </a>
+
+            <div class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg flex items-center space-x-2">
+                <input type="text" id="area-search" placeholder="Search area..."
+                    class="bg-transparent border-none focus:ring-0 text-sm w-48">
+                <button class="text-blue-600" onclick="searchArea()"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Map Container -->
+    <main class="flex-1 bg-gray-200 relative">
+        <div id="map" class="w-full h-full z-0"></div>
+
+        <!-- Floating Panel -->
+        <div
+            class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-2 flex space-x-2 z-10">
+            <button onclick="filterMarkers('hospital')"
+                class="px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold text-xs hover:bg-blue-100 transition-colors"
+                id="filter-hospitals">Hospitals</button>
+            <button onclick="filterMarkers('clinic')"
+                class="px-4 py-2 rounded-xl hover:bg-gray-50 text-gray-600 font-bold text-xs transition-colors"
+                id="filter-clinics">Clinics</button>
+            <button onclick="filterMarkers('pharmacy')"
+                class="px-4 py-2 rounded-xl hover:bg-gray-50 text-gray-600 font-bold text-xs transition-colors"
+                id="filter-pharmacies">Pharmacies</button>
+            <button onclick="filterMarkers('transport')"
+                class="px-4 py-2 rounded-xl hover:bg-gray-50 text-gray-600 font-bold text-xs transition-colors"
+                id="filter-transports">Transport</button>
+        </div>
+    </main>
+
+    <script>
+        // Init Map (Default: Mumbai)
+        var map = L.map('map').setView([19.0760, 72.8777], 12);
+
+        // OpenStreetMap Layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Locations Data
+        var locations = [
+            // Hospitals (Red)
+            { lat: 19.1630, lng: 72.9430, name: "Fortis Hospital (Mumbai)", type: "hospital", color: "red" },
+            { lat: 19.0060, lng: 72.8410, name: "Tata Memorial Hospital", type: "hospital", color: "red" },
+            { lat: 28.5672, lng: 77.2100, name: "AIIMS Delhi", type: "hospital", color: "red" },
+            { lat: 13.0630, lng: 80.2550, name: "Apollo Hospital (Chennai)", type: "hospital", color: "red" },
+
+            // Clinics (Blue)
+            { lat: 19.0500, lng: 72.8300, name: "City Care Clinic", type: "clinic", color: "blue" },
+            { lat: 19.1000, lng: 72.8800, name: "MediPlus Clinic", type: "clinic", color: "blue" },
+
+            // Pharmacies (Green)
+            { lat: 19.0600, lng: 72.8400, name: "Apollo Pharmacy", type: "pharmacy", color: "green" },
+            { lat: 19.1200, lng: 72.8600, name: "MedLife Store", type: "pharmacy", color: "green" },
+
+            // Transport/Ambulance (Orange)
+            { lat: 19.0800, lng: 72.8900, name: "Ambulance Station 1", type: "transport", color: "orange", phone: "108" },
+            { lat: 19.0400, lng: 72.8500, name: "Emergency Response Unit", type: "transport", color: "orange", phone: "108" },
+            { lat: 28.5700, lng: 77.2200, name: "Delhi Ambulance Service", type: "transport", color: "orange", phone: "102" }
+        ];
+
+        var markers = [];
+
+        function addMarkers(typeFilter) {
+            // Clear existing
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            locations.forEach(loc => {
+                if (typeFilter === 'all' || loc.type === typeFilter) {
+                    var iconColor = 'gray'; // Default
+                    if (loc.type === 'hospital') iconColor = 'red';
+                    else if (loc.type === 'clinic') iconColor = 'blue';
+                    else if (loc.type === 'pharmacy') iconColor = 'green';
+                    else if (loc.type === 'transport') iconColor = 'orange';
+
+                    // Custom marker styling
+                    var marker = L.circleMarker([loc.lat, loc.lng], {
+                        color: iconColor,
+                        fillColor: iconColor,
+                        fillOpacity: 0.8,
+                        radius: loc.type === 'transport' ? 10 : 8 // Make transport bigger
+                    }).addTo(map);
+
+                    let popupContent = `<b>${loc.name}</b><br>${loc.type.charAt(0).toUpperCase() + loc.type.slice(1)}`;
+                    if (loc.phone) popupContent += `<br>📞 ${loc.phone}`;
+
+                    marker.bindPopup(popupContent);
+                    markers.push(marker);
+                }
+            });
+        }
+
+        // Initial Load
+        addMarkers('all');
+
+        // Filter Function
+        function filterMarkers(type) {
+            addMarkers(type);
+
+            // Update Button Styles
+            document.querySelectorAll('button[id^="filter-"]').forEach(btn => {
+                btn.classList.remove('bg-blue-50', 'text-blue-600');
+                btn.classList.add('hover:bg-gray-50', 'text-gray-600');
+            });
+
+            const activeBtn = document.getElementById(`filter-${type}s`);
+            if (activeBtn) {
+                activeBtn.classList.remove('hover:bg-gray-50', 'text-gray-600');
+                activeBtn.classList.add('bg-blue-50', 'text-blue-600');
+            }
+        }
+
+        // Search Function (Simulation)
+        function searchArea() {
+            const query = document.getElementById('area-search').value.toLowerCase();
+            if (query.includes('mumbai')) {
+                map.setView([19.0760, 72.8777], 12);
+            } else if (query.includes('delhi')) {
+                map.setView([28.7041, 77.1025], 12);
+            } else if (query.includes('bangalore')) {
+                map.setView([12.9716, 77.5946], 12);
+            } else if (query.includes('chennai')) {
+                map.setView([13.0827, 80.2707], 12);
+            } else {
+                alert('Location not found in demo database. Try "Mumbai" or "Delhi".');
+            }
+        }
+    </script>
+</body>
+
+</html>
