@@ -2,14 +2,18 @@
 
 This project contains three separate backend implementations for a Medical Application, demonstrating how to achieve similar functionality using different Python web frameworks: **FastAPI**, **Django**, and **Flask**.
 
-## 🚀 General Application Features
+## 🚀 Detailed Application Features
 
-All implementations share a common set of frontend templates and general features:
--   **Dashboard**: Overview of user health, upcoming appointments, and simulated data.
--   **Chat Interface**: AI-assisted medical chat.
--   **Doctors & Hospitals**: Listings of medical professionals and facilities.
--   **Profile**: User profile management.
--   **AI Lab & Maps**: Additional simulated features.
+All implementations share a common set of frontend templates and core functionality. Key features include:
+
+- **📊 Interactive Dashboard**: A centralized hub displaying the user's health overview, upcoming appointments, and access to recent chat sessions.
+- **🤖 AI-Powered Medical Chat**: An intelligent chat interface (`/api/chat`) powered by a shared Large Language Model (LLM) service. The AI is context-aware, integrating data about local doctors and hospitals, and includes simulated image attachment handling.
+- **🩺 Doctor Directory**: A comprehensive listing of medical professionals fetched from a centralized SQL database. Includes details like specialties, live status, experience, ratings, and contact info.
+- **🏥 Hospital Locator**: A directory of medical facilities showing operational hours, emergency status (e.g., 24/7, Trauma Center), and locations.
+- **👤 User Profile Management**: Displays and manages patient information such as blood type, pre-existing conditions, age, and contact details.
+- **🧪 AI Lab & Advanced Routing**: Features dedicated pages for simulated advanced medical analysis (`/ailab`), geographical mapping (`/map`), and patient transportation logistics (`/transportation`).
+- **🌱 Automatic Database Seeding**: On startup, the applications automatically seed the local SQLite database with mock users, doctors, hospitals, and chat sessions so you can start testing immediately.
+- **🧩 Shared Core Logic**: The projects demonstrate modularity by sharing core Python logic across frameworks, such as the `llm_service.py` for AI text generation and `databases/sql_manager.py` for querying.
 
 ## 📁 Project Structure
 
